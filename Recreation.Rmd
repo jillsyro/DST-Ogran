@@ -41,6 +41,8 @@ library("tidyverse")
 library("dplyr")
 library("ggplot2")
 library("magrittr")
+library("plyr")
+library("reshape2")
 
 full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
 #remove blank rows
@@ -66,8 +68,15 @@ Step 4: creating the reaction norm figures
   -STUCK: Need to figure out what I need to do to make error bars on each point.
   
   
-```{r plotting, include=TRUE, message=TRUE}
+```{r calculating STDEV, include=TRUE, message=TRUE}
 
+stdev <- full_dataset %>% group_by(Treatment, Population) %>% summarise(Glucosinolates = sd(`Total glucosinolates (µmol/g DW)`)
+            
+
+```
+  
+```{r plotting, include=TRUE, message=TRUE}
+#Glucosinolates
 gluc <- ggplot(data=subset_trt)+   
   aes(x=Treatment)+
   aes(y=Glucosinolates)+
@@ -77,6 +86,7 @@ gluc <- ggplot(data=subset_trt)+
   aes(shape=Population)+
   geom_point()+
   geom_line()+
+  geom_errorbar()+
   scale_shape_manual(values=c(17,15))+
   scale_color_manual(values=c("black","black"))+
   scale_fill_manual(values=c("black","black"))+
@@ -86,7 +96,13 @@ gluc <- ggplot(data=subset_trt)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 plot(gluc)
 
+#Trypsin PI
 
+#Trichome density
+
+#Bolting
+
+#Dry weight
 
 
 ```
