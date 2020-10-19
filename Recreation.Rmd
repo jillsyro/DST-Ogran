@@ -1,0 +1,92 @@
+---
+title: "Recreation, Ogran et al. 2019, figure 3"
+author: "Jill Syrotchen"
+date: "10/17/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Step 1: finding the data
+
+  -Data were fairly easily accessible through a link in the paper (https://doi.10.5061/dryad.b2rbnzs93). Clicking the link directly would not load the page for me, so I went to https://doi.org and typed in 10.5061/dryad.b2rbnzs93 to the search bar, which loaded this DRYAD page: https://datadryad.org/stash/dataset/doi:10.5061/dryad.b2rbnzs93. From that page I was able to download the complete .xlsx dataset for the paper.
+  
+  -I then converted the .xlsx dataset to a .csv file.
+  
+  -I was not able to find any code.
+  
+  
+  
+Step 2: loading data into R
+
+  -Data loaded into R fine, but due to formatting every other row was blank and showed as NA. To eliminate the empty rows I used a function from dplyr (see #remove blank rows).
+  
+  
+  
+Step 3: manipulating the data
+  
+  -Stuck on getting the dataset sorted to individual trait:treatment sets so I can plot them. I tried to group by population and treatment and then summarize for mean glucosinolates first, which didn't work, but I thought it might be because of its units symbol. 
+  
+  -Tried str() on the full dataset to see if any spaces were throwing off the table (hopefully this is the right function that would remove stray spaces?)
+  
+  -So then I tried summary next for dry weight (DW) and got the same result - the group_by works but the rest of the table says NA.
+  
+  -SOLUTION: had to use fancy `` symbols for the names of columns to get the commands to work!
+  
+  
+
+```{r setup, include=TRUE, message=FALSE}
+
+library("tidyverse")
+library("dplyr")
+library("ggplot2")
+library("magrittr")
+
+full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
+#remove blank rows
+full_dataset <- full_dataset %>% filter_all(any_vars(!is.na(.)))
+
+#grouping subset of treatments and groups plotted
+subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(Glucosinolates = mean(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE), Trypsin_PI = mean(`Trypsin-PI (%)`, na.rm = TRUE), Trichome_density = mean(`Trichomes`, na.rm = TRUE), Bolting_time = mean(`Bolting time (days)`, na.rm = TRUE), Dry_weight = mean(`DW (g)`, na.rm = TRUE))
+
+
+```
+Step 4: creating the reaction norm figures
+
+  -Using ggplot 2, I assembled a very basic graph starting with glucosinolates first. 
+  
+  -Used geom_point at first and tried geom_line to get lines to connect between points, but it connected points within treatments instead.
+  
+  -SOLUTION: used aes(group) to group by population, which made lines between population points!
+  
+  -Now doing stylistic edits to get the graph to really look like the figures from the paper. 
+  
+  -STUCK: formatting the y axis to show the scaling it does in the paper.
+  
+  -STUCK: Need to figure out what I need to do to make error bars on each point.
+  
+  
+```{r plotting, include=TRUE, message=TRUE}
+
+gluc <- ggplot(data=subset_trt)+   
+  aes(x=Treatment)+
+  aes(y=Glucosinolates)+
+  aes(group=Population)+
+  aes(color=Treatment)+
+  aes(fill=Treatment)+
+  aes(shape=Population)+
+  geom_point()+
+  geom_line()+
+  scale_shape_manual(values=c(17,15))+
+  scale_color_manual(values=c("black","black"))+
+  scale_fill_manual(values=c("black","black"))+
+  ylab("Glucosinolates")+
+  scale_y_continuous(limits=c(9, 22))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+plot(gluc)
+
+
+
+
+```
