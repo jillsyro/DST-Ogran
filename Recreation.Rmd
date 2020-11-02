@@ -4,7 +4,6 @@ author: "Jill Syrotchen"
 date: "10/17/2020"
 output:
   pdf_document: default
-  html_document: default
 bibliography: bibliography.bib
 ---
 
@@ -41,8 +40,6 @@ library("tidyverse")
 library("dplyr")
 library("ggplot2")
 library("magrittr")
-library("plyr")
-library("reshape2")
 library("knitr")
 
 full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
@@ -51,16 +48,18 @@ full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
 full_dataset <- full_dataset %>% filter_all(any_vars(!is.na(.)))
 
 #grouping subset of treatments and groups plotted, and standard error
-subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(
+subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% dplyr::summarize(
   Glucosinolates = mean(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE), 
   Trypsin_PI = mean(`Trypsin-PI (%)`, na.rm = TRUE), 
   Trichome_density = mean(`Trichomes`, na.rm = TRUE), 
   Bolting_time = mean(`Bolting time (days)`, na.rm = TRUE), 
   Dry_weight = mean(`DW (g)`, na.rm = TRUE),
-  gluc_se = sd(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE)/sqrt(length(na.omit(`Total glucosinolates (µmol/g DW)`))),
+  gluc_se = sd(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE)/sqrt(length(na.omit(
+    `Total glucosinolates (µmol/g DW)`))),
   trypsin_se = sd(`Trypsin-PI (%)`, na.rm = TRUE)/sqrt(length(na.omit(`Trypsin-PI (%)`))),
   trichome_se = sd(`Trichomes`, na.rm = TRUE)/sqrt(length(na.omit(`Trichomes`))),
-  bolting_se = sd(`Bolting time (days)`, na.rm = TRUE)/sqrt(length(na.omit(`Bolting time (days)`))),
+  bolting_se = sd(`Bolting time (days)`, na.rm = TRUE)/sqrt(length(na.omit(
+    `Bolting time (days)`))),
   dw_se = sd(`DW (g)`, na.rm = TRUE)/sqrt(length(na.omit(`DW (g)`)))
   )
 
@@ -96,7 +95,8 @@ gluc <- ggplot(data=subset_trt)+
   aes(shape=Population)+
   geom_point()+
   geom_line()+
-  geom_errorbar(aes(y=Glucosinolates, ymin=Glucosinolates-gluc_se, ymax=Glucosinolates+gluc_se), width = 0.05)+
+  geom_errorbar(aes(y=Glucosinolates, ymin=Glucosinolates-gluc_se,
+                    ymax=Glucosinolates+gluc_se), width = 0.05)+
   scale_shape_manual(values=c(17,15))+
   scale_color_manual(values=c("blue","red"))+
   scale_fill_manual(values=c("blue","red"))+
@@ -116,7 +116,8 @@ TPI <- ggplot(data=subset_trt)+
   aes(shape=Population)+
   geom_point()+
   geom_line()+
-  geom_errorbar(aes(y=Trypsin_PI, ymin=Trypsin_PI-trypsin_se, ymax=Trypsin_PI+trypsin_se), width = 0.05)+
+  geom_errorbar(aes(y=Trypsin_PI, ymin=Trypsin_PI-trypsin_se, 
+                    ymax=Trypsin_PI+trypsin_se), width = 0.05)+
   scale_shape_manual(values=c(17,15))+
   scale_color_manual(values=c("blue","red"))+
   scale_fill_manual(values=c("blue","red"))+
@@ -127,7 +128,7 @@ TPI <- ggplot(data=subset_trt)+
 plot(TPI)
 
 #Trichome density
-gluc <- ggplot(data=subset_trt)+   
+trichome <- ggplot(data=subset_trt)+   
   aes(x=Treatment)+
   aes(y=Trichome_density)+
   aes(group=Population)+
@@ -136,7 +137,8 @@ gluc <- ggplot(data=subset_trt)+
   aes(shape=Population)+
   geom_point()+
   geom_line()+
-  geom_errorbar(aes(y=Trichome_density, ymin=Trichome_density-trichome_se, ymax=Trichome_density+trichome_se), width = 0.05)+
+  geom_errorbar(aes(y=Trichome_density, ymin=Trichome_density-trichome_se, 
+                    ymax=Trichome_density+trichome_se), width = 0.05)+
   scale_shape_manual(values=c(17,15))+
   scale_color_manual(values=c("blue","red"))+
   scale_fill_manual(values=c("blue","red"))+
@@ -144,7 +146,7 @@ gluc <- ggplot(data=subset_trt)+
   scale_y_continuous(limits=c(1,5), breaks = seq(1,5,by = 1))+
   theme_bw()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-plot(gluc)
+plot(trichome)
 
 #Bolting
 
@@ -154,4 +156,4 @@ plot(gluc)
 ```
 
 #Bibliography
-[Ogran2019-td]
+[@Ogran2019-td]
