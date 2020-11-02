@@ -5,7 +5,7 @@ date: "10/17/2020"
 output:
   pdf_document: default
   html_document: default
-bibliography: bibliography.tex
+bibliography: bibliography.bib
 ---
 
 Step 1: finding the data
@@ -43,12 +43,14 @@ library("ggplot2")
 library("magrittr")
 library("plyr")
 library("reshape2")
+library("knitr")
 
 full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
+
 #remove blank rows
 full_dataset <- full_dataset %>% filter_all(any_vars(!is.na(.)))
 
-#grouping subset of treatments and groups plotted
+#grouping subset of treatments and groups plotted, and standard error
 subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(
   Glucosinolates = mean(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE), 
   Trypsin_PI = mean(`Trypsin-PI (%)`, na.rm = TRUE), 
@@ -62,7 +64,7 @@ subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(
   dw_se = sd(`DW (g)`, na.rm = TRUE)/sqrt(length(na.omit(`DW (g)`)))
   )
 
-
+knitr::kable(subset_trt,digits=2,caption="Grouped trait treatments and their standard errors")
 ```
 
 Step 4: creating the reaction norm figures
@@ -82,7 +84,8 @@ Step 4: creating the reaction norm figures
   -SOLVED: calculated SEM for each trait and added it to the dataset
   
   
-```{r plotting, include=TRUE, message=TRUE}
+```{r plotting, include=TRUE}
+
 #Glucosinolates
 gluc <- ggplot(data=subset_trt)+   
   aes(x=Treatment)+
