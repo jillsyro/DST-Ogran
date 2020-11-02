@@ -5,6 +5,7 @@ date: "10/17/2020"
 output:
   pdf_document: default
   html_document: default
+bibliography: bibliography.tex
 ---
 
 Step 1: finding the data
@@ -33,7 +34,6 @@ Step 3: manipulating the data
   
   -SOLUTION: had to use fancy `` symbols for the names of columns to get the commands to work!
   
-  
 
 ```{r setup, include=TRUE, message=FALSE}
 
@@ -49,10 +49,22 @@ full_dataset<-read_csv("./data/Full_dataset_Ogran_et_al.csv")
 full_dataset <- full_dataset %>% filter_all(any_vars(!is.na(.)))
 
 #grouping subset of treatments and groups plotted
-subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(Glucosinolates = mean(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE), Trypsin_PI = mean(`Trypsin-PI (%)`, na.rm = TRUE), Trichome_density = mean(`Trichomes`, na.rm = TRUE), Bolting_time = mean(`Bolting time (days)`, na.rm = TRUE), Dry_weight = mean(`DW (g)`, na.rm = TRUE))
+subset_trt <- full_dataset %>% group_by(Population, Treatment) %>% summarize(
+  Glucosinolates = mean(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE), 
+  Trypsin_PI = mean(`Trypsin-PI (%)`, na.rm = TRUE), 
+  Trichome_density = mean(`Trichomes`, na.rm = TRUE), 
+  Bolting_time = mean(`Bolting time (days)`, na.rm = TRUE), 
+  Dry_weight = mean(`DW (g)`, na.rm = TRUE),
+  gluc_se = sd(`Total glucosinolates (µmol/g DW)`, na.rm = TRUE)/sqrt(length(na.omit(`Total glucosinolates (µmol/g DW)`))),
+  trypsin_se = sd(`Trypsin-PI (%)`, na.rm = TRUE)/sqrt(length(na.omit(`Trypsin-PI (%)`))),
+  trichome_se = sd(`Trichomes`, na.rm = TRUE)/sqrt(length(na.omit(`Trichomes`))),
+  bolting_se = sd(`Bolting time (days)`, na.rm = TRUE)/sqrt(length(na.omit(`Bolting time (days)`))),
+  dw_se = sd(`DW (g)`, na.rm = TRUE)/sqrt(length(na.omit(`DW (g)`)))
+  )
 
 
 ```
+
 Step 4: creating the reaction norm figures
 
   -Using ggplot 2, I assembled a very basic graph starting with glucosinolates first. 
@@ -64,16 +76,11 @@ Step 4: creating the reaction norm figures
   -Now doing stylistic edits to get the graph to really look like the figures from the paper. 
   
   -STUCK: formatting the y axis to show the scaling it does in the paper.
+  -SOLVED: scale_y_continuous(limits=c(10,22), breaks = seq(10,22,by = 2))
   
   -STUCK: Need to figure out what I need to do to make error bars on each point.
+  -SOLVED: calculated SEM for each trait and added it to the dataset
   
-  
-```{r calculating STDEV, include=TRUE, message=TRUE}
-
-stdev <- full_dataset %>% group_by(Treatment, Population) %>% summarise(Glucosinolates = sd(`Total glucosinolates (µmol/g DW)`)
-            
-
-```
   
 ```{r plotting, include=TRUE, message=TRUE}
 #Glucosinolates
@@ -81,24 +88,60 @@ gluc <- ggplot(data=subset_trt)+
   aes(x=Treatment)+
   aes(y=Glucosinolates)+
   aes(group=Population)+
-  aes(color=Treatment)+
-  aes(fill=Treatment)+
+  aes(color=Population)+
+  aes(fill=Population)+
   aes(shape=Population)+
   geom_point()+
   geom_line()+
-  geom_errorbar()+
+  geom_errorbar(aes(y=Glucosinolates, ymin=Glucosinolates-gluc_se, ymax=Glucosinolates+gluc_se), width = 0.05)+
   scale_shape_manual(values=c(17,15))+
-  scale_color_manual(values=c("black","black"))+
-  scale_fill_manual(values=c("black","black"))+
+  scale_color_manual(values=c("blue","red"))+
+  scale_fill_manual(values=c("blue","red"))+
   ylab("Glucosinolates")+
-  scale_y_continuous(limits=c(9, 22))+
+  scale_y_continuous(limits=c(10,22), breaks = seq(10,22,by = 2))+
   theme_bw()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 plot(gluc)
 
 #Trypsin PI
+TPI <- ggplot(data=subset_trt)+   
+  aes(x=Treatment)+
+  aes(y=Trypsin_PI)+
+  aes(group=Population)+
+  aes(color=Population)+
+  aes(fill=Population)+
+  aes(shape=Population)+
+  geom_point()+
+  geom_line()+
+  geom_errorbar(aes(y=Trypsin_PI, ymin=Trypsin_PI-trypsin_se, ymax=Trypsin_PI+trypsin_se), width = 0.05)+
+  scale_shape_manual(values=c(17,15))+
+  scale_color_manual(values=c("blue","red"))+
+  scale_fill_manual(values=c("blue","red"))+
+  ylab("Trypsin PI activity (%)")+
+  scale_y_continuous(limits=c(30,65), breaks = seq(30,65,by = 5))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+plot(TPI)
 
 #Trichome density
+gluc <- ggplot(data=subset_trt)+   
+  aes(x=Treatment)+
+  aes(y=Trichome_density)+
+  aes(group=Population)+
+  aes(color=Population)+
+  aes(fill=Population)+
+  aes(shape=Population)+
+  geom_point()+
+  geom_line()+
+  geom_errorbar(aes(y=Trichome_density, ymin=Trichome_density-trichome_se, ymax=Trichome_density+trichome_se), width = 0.05)+
+  scale_shape_manual(values=c(17,15))+
+  scale_color_manual(values=c("blue","red"))+
+  scale_fill_manual(values=c("blue","red"))+
+  ylab("Trichome density")+
+  scale_y_continuous(limits=c(1,5), breaks = seq(1,5,by = 1))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+plot(gluc)
 
 #Bolting
 
@@ -106,3 +149,6 @@ plot(gluc)
 
 
 ```
+
+#Bibliography
+[Ogran2019-td]
