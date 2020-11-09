@@ -31,7 +31,7 @@ Step 3: manipulating the data
   
   -So then I tried summary next for dry weight (DW) and got the same result - the group_by works but the rest of the table says NA.
   
-  -SOLUTION: had to use fancy `` symbols for the names of columns to get the commands to work!
+  -SOLUTION: had to use ` symbols (top left of keyboard) for the names of columns to get the commands to work!
   
 
 ```{r setup, include=TRUE, message=FALSE}
@@ -77,10 +77,13 @@ Step 4: creating the reaction norm figures
   -Now doing stylistic edits to get the graph to really look like the figures from the paper. 
   
   -STUCK: formatting the y axis to show the scaling it does in the paper.
+  
   -SOLVED: scale_y_continuous(limits=c(10,22), breaks = seq(10,22,by = 2))
   
+  
   -STUCK: Need to figure out what I need to do to make error bars on each point.
-  -SOLVED: calculated SEM for each trait and added it to the dataset
+  
+  -SOLVED: calculated SEM for each trait and added it to the dataset, then used geom_errorbar.
   
   
 ```{r plotting, include=TRUE}
